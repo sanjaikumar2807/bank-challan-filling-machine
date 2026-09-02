@@ -630,6 +630,19 @@ class ChallanApp {
         }
         return text;
     }
+
+    speakEnglishHelp() {
+        if (!this.voiceEnabled || !('speechSynthesis' in window)) return;
+        const helpText = 'English assistance is active. Select deposit or withdrawal to begin.';
+        if (window.voiceSystem && window.voiceSystem.speak) {
+            window.voiceSystem.speak(helpText, { language: 'en-IN' });
+            return;
+        }
+        const utterance = new SpeechSynthesisUtterance(helpText);
+        utterance.lang = 'en-IN';
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+    }
     
     speakNumber(number) {
         const numberToWords = (num) => {
@@ -886,8 +899,8 @@ class ChallanApp {
 
     changeLanguage(language) {
         const translations = {
-            en: { language: 'Language', accessibility: 'Accessibility', chooseLanguage: 'Choose language', accessibilityOptions: 'Accessibility options', largeText: 'Large text', highContrast: 'High contrast', reducedMotion: 'Reduce motion', voiceGuidance: 'Voice guidance' },
-            ta: { language: 'மொழி', accessibility: 'அணுகல்தன்மை', chooseLanguage: 'மொழியைத் தேர்ந்தெடுக்கவும்', accessibilityOptions: 'அணுகல்தன்மை விருப்பங்கள்', largeText: 'பெரிய எழுத்து', highContrast: 'உயர் மாறுபாடு', reducedMotion: 'குறைந்த இயக்கம்', voiceGuidance: 'குரல் வழிகாட்டுதல்' }
+            en: { language: 'Language', accessibility: 'Accessibility', chooseLanguage: 'Choose language', accessibilityOptions: 'Accessibility options', largeText: 'Large text', highContrast: 'High contrast', reducedMotion: 'Reduce motion', voiceGuidance: 'Voice guidance', englishHelp: 'Speak English help' },
+            ta: { language: 'மொழி', accessibility: 'அணுகல்தன்மை', chooseLanguage: 'மொழியைத் தேர்ந்தெடுக்கவும்', accessibilityOptions: 'அணுகல்தன்மை விருப்பங்கள்', largeText: 'பெரிய எழுத்து', highContrast: 'உயர் மாறுபாடு', reducedMotion: 'குறைந்த இயக்கம்', voiceGuidance: 'குரல் வழிகாட்டுதல்', englishHelp: 'ஆங்கில உதவியைப் பேசவும்' }
         };
         if (!translations[language]) return;
         this.currentLanguage = language;
@@ -1015,6 +1028,10 @@ function changeLanguage(language) {
 
 function updateAccessibility(setting, enabled) {
     window.challanApp.updateAccessibility(setting, enabled);
+}
+
+function speakEnglishHelp() {
+    window.challanApp.speakEnglishHelp();
 }
 
 function toggleVoiceInput() {

@@ -56,14 +56,14 @@
                         </button>
                     </div>
                     
-                    <div class="quick-actions">
-                        <button class="quick-action-btn" onclick="showLanguageSelector()">
+                    <div class="quick-actions" aria-label="Application preferences">
+                        <button class="quick-action-btn" type="button" onclick="showLanguageSelector()" aria-haspopup="dialog" aria-controls="language-modal">
                             <span class="icon">🌍</span>
-                            <span class="text">Language</span>
+                            <span class="text" data-i18n="language">Language</span>
                         </button>
-                        <button class="quick-action-btn" onclick="showAccessibilityOptions()">
+                        <button class="quick-action-btn" type="button" onclick="showAccessibilityOptions()" aria-haspopup="dialog" aria-controls="accessibility-modal">
                             <span class="icon">♿</span>
-                            <span class="text">Accessibility</span>
+                            <span class="text" data-i18n="accessibility">Accessibility</span>
                         </button>
                     </div>
                 </div>
@@ -354,6 +354,37 @@
                         <p>Available 24/7 for assistance</p>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="language-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="language-modal-title" hidden>
+        <div class="modal-content preferences-modal">
+            <div class="modal-header">
+                <h3 id="language-modal-title" data-i18n="chooseLanguage">Choose language</h3>
+                <button class="close-btn" type="button" onclick="closePreferences('language-modal')" aria-label="Close language dialog">×</button>
+            </div>
+            <div class="modal-body preference-options">
+                <label for="language-select" data-i18n="language">Language</label>
+                <select id="language-select" class="preference-select" onchange="changeLanguage(this.value)">
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div id="accessibility-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="accessibility-modal-title" hidden>
+        <div class="modal-content preferences-modal">
+            <div class="modal-header">
+                <h3 id="accessibility-modal-title" data-i18n="accessibilityOptions">Accessibility options</h3>
+                <button class="close-btn" type="button" onclick="closePreferences('accessibility-modal')" aria-label="Close accessibility dialog">×</button>
+            </div>
+            <div class="modal-body preference-options">
+                <label class="preference-toggle"><input id="large-text-toggle" type="checkbox" onchange="updateAccessibility('largeText', this.checked)"><span data-i18n="largeText">Large text</span></label>
+                <label class="preference-toggle"><input id="high-contrast-toggle" type="checkbox" onchange="updateAccessibility('highContrast', this.checked)"><span data-i18n="highContrast">High contrast</span></label>
+                <label class="preference-toggle"><input id="reduced-motion-toggle" type="checkbox" onchange="updateAccessibility('reducedMotion', this.checked)"><span data-i18n="reducedMotion">Reduce motion</span></label>
+                <label class="preference-toggle"><input id="voice-toggle" type="checkbox" onchange="updateAccessibility('voice', this.checked)"><span data-i18n="voiceGuidance">Voice guidance</span></label>
             </div>
         </div>
     </div>

@@ -836,6 +836,66 @@ class ChallanApp {
             this.resumeSession();
         }
     }
+
+    openPreferences(id) {
+        const modal = document.getElementById(id);
+        if (!modal) return;
+        modal.hidden = false;
+        modal.style.display = 'block';
+        this.pauseSession();
+        const firstControl = modal.querySelector('select, input, button');
+        if (firstControl) firstControl.focus();
+    }
+
+    closePreferences(id) {
+        const modal = document.getElementById(id);
+        if (!modal) return;
+        modal.hidden = true;
+        modal.style.display = 'none';
+        this.resumeSession();
+    }
+
+    changeLanguage(language) {
+        const translations = {
+            en: { language: 'Language', accessibility: 'Accessibility', chooseLanguage: 'Choose language', accessibilityOptions: 'Accessibility options', largeText: 'Large text', highContrast: 'High contrast', reducedMotion: 'Reduce motion', voiceGuidance: 'Voice guidance' },
+            hi: { language: 'भाषा', accessibility: 'सुगम्यता', chooseLanguage: 'भाषा चुनें', accessibilityOptions: 'सुगम्यता विकल्प', largeText: 'बड़ा टेक्स्ट', highContrast: 'उच्च कंट्रास्ट', reducedMotion: 'कम गति', voiceGuidance: 'वॉइस मार्गदर्शन' }
+        };
+        if (!translations[language]) return;
+        this.currentLanguage = language;
+        document.documentElement.lang = language === 'hi' ? 'hi' : 'en';
+        document.querySelectorAll('[data-i18n]').forEach((element) => {
+            element.textContent = translations[language][element.dataset.i18n];
+        });
+        localStorage.setItem('language', language);
+        const select = document.getElementById('language-select');
+        if (select) select.value = language;
+        if (window.voiceSystem && window.voiceSystem.setLanguage) {
+            window.voiceSystem.setLanguage(language === 'hi' ? 'hi-IN' : 'en-IN');
+        }
+    }
+
+    updateAccessibility(setting, enabled) {
+        const className = `accessibility-${setting.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`;
+        document.body.classList.toggle(className, enabled);
+        localStorage.setItem(`accessibility-${setting}`, enabled);
+        if (setting === 'voice') this.voiceEnabled = enabled;
+        if (setting === 'voice' && !enabled && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
+
+    loadAccessibilityPreferences() {
+        ['largeText', 'highContrast', 'reducedMotion'].forEach((setting) => {
+            const enabled = localStorage.getItem(`accessibility-${setting}`) === 'true';
+            this.updateAccessibility(setting, enabled);
+            const toggle = document.getElementById(`${setting.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}-toggle`);
+            if (toggle) toggle.checked = enabled;
+        });
+        const savedVoice = localStorage.getItem('accessibility-voice');
+        if (savedVoice !== null) {
+            this.updateAccessibility('voice', savedVoice === 'true');
+            const voiceToggle = document.getElementById('voice-toggle');
+            if (voiceToggle) voiceToggle.checked = savedVoice === 'true';
+        }
+    }
     
     loadUserPreferences() {
         // Load saved preferences from localStorage
@@ -848,6 +908,8 @@ class ChallanApp {
         if (savedLanguage) {
             this.currentLanguage = savedLanguage;
         }
+        this.changeLanguage(this.currentLanguage);
+        this.loadAccessibilityPreferences();
     }
     
     saveUserPreferences() {
@@ -906,6 +968,26 @@ function closeHelp() {
     window.challanApp.closeHelp();
 }
 
+function showLanguageSelector() {
+    window.challanApp.openPreferences('language-modal');
+}
+
+function showAccessibilityOptions() {
+    window.challanApp.openPreferences('accessibility-modal');
+}
+
+function closePreferences(id) {
+    window.challanApp.closePreferences(id);
+}
+
+function changeLanguage(language) {
+    window.challanApp.changeLanguage(language);
+}
+
+function updateAccessibility(setting, enabled) {
+    window.challanApp.updateAccessibility(setting, enabled);
+}
+
 function toggleVoiceInput() {
     window.challanApp.toggleVoiceInput();
 }
@@ -916,4 +998,8 @@ window.onclick = function(event) {
     if (event.target === modal) {
         closeHelp();
     }
+    ['language-modal', 'accessibility-modal'].forEach((id) => {
+        const preferenceModal = document.getElementById(id);
+        if (event.target === preferenceModal) closePreferences(id);
+    });
 }

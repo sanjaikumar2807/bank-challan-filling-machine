@@ -858,11 +858,11 @@ class ChallanApp {
     changeLanguage(language) {
         const translations = {
             en: { language: 'Language', accessibility: 'Accessibility', chooseLanguage: 'Choose language', accessibilityOptions: 'Accessibility options', largeText: 'Large text', highContrast: 'High contrast', reducedMotion: 'Reduce motion', voiceGuidance: 'Voice guidance' },
-            hi: { language: 'भाषा', accessibility: 'सुगम्यता', chooseLanguage: 'भाषा चुनें', accessibilityOptions: 'सुगम्यता विकल्प', largeText: 'बड़ा टेक्स्ट', highContrast: 'उच्च कंट्रास्ट', reducedMotion: 'कम गति', voiceGuidance: 'वॉइस मार्गदर्शन' }
+            ta: { language: 'மொழி', accessibility: 'அணுகல்தன்மை', chooseLanguage: 'மொழியைத் தேர்ந்தெடுக்கவும்', accessibilityOptions: 'அணுகல்தன்மை விருப்பங்கள்', largeText: 'பெரிய எழுத்து', highContrast: 'உயர் மாறுபாடு', reducedMotion: 'குறைந்த இயக்கம்', voiceGuidance: 'குரல் வழிகாட்டுதல்' }
         };
         if (!translations[language]) return;
         this.currentLanguage = language;
-        document.documentElement.lang = language === 'hi' ? 'hi' : 'en';
+        document.documentElement.lang = language === 'ta' ? 'ta' : 'en';
         document.querySelectorAll('[data-i18n]').forEach((element) => {
             element.textContent = translations[language][element.dataset.i18n];
         });
@@ -870,7 +870,7 @@ class ChallanApp {
         const select = document.getElementById('language-select');
         if (select) select.value = language;
         if (window.voiceSystem && window.voiceSystem.setLanguage) {
-            window.voiceSystem.setLanguage(language === 'hi' ? 'hi-IN' : 'en-IN');
+            window.voiceSystem.setLanguage(language === 'ta' ? 'ta-IN' : 'en-IN');
         }
     }
 
@@ -906,7 +906,7 @@ class ChallanApp {
         
         const savedLanguage = localStorage.getItem('language');
         if (savedLanguage) {
-            this.currentLanguage = savedLanguage;
+            this.currentLanguage = savedLanguage === 'ta' ? 'ta' : 'en';
         }
         this.changeLanguage(this.currentLanguage);
         this.loadAccessibilityPreferences();

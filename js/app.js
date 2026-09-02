@@ -589,17 +589,46 @@ class ChallanApp {
     
     speakText(text) {
         if (!this.voiceEnabled) return;
+
+        const spokenText = this.currentLanguage === 'ta' ? this.translateSpeech(text) : text;
+        if (window.voiceSystem && window.voiceSystem.speak) {
+            window.voiceSystem.speak(spokenText, { language: this.currentLanguage === 'ta' ? 'ta-IN' : 'en-IN' });
+            return;
+        }
         
         // Cancel any ongoing speech
         window.speechSynthesis.cancel();
         
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-IN';
+        const utterance = new SpeechSynthesisUtterance(spokenText);
+        utterance.lang = this.currentLanguage === 'ta' ? 'ta-IN' : 'en-IN';
         utterance.rate = 0.9;
         utterance.pitch = 1;
         utterance.volume = 1;
         
         window.speechSynthesis.speak(utterance);
+    }
+
+    translateSpeech(text) {
+        const translations = {
+            'Welcome to Bank Challan Service. Please select a transaction type to begin.': 'வங்கி சலான் சேவைக்கு வரவேற்கிறோம். தொடங்க ஒரு பரிவர்த்தனை வகையைத் தேர்ந்தெடுக்கவும்.',
+            'Please enter the amount using the keypad or voice input.': 'விசைப்பலகை அல்லது குரல் உள்ளீட்டைப் பயன்படுத்தி தொகையை உள்ளிடவும்.',
+            'Please confirm your transaction details.': 'உங்கள் பரிவர்த்தனை விவரங்களை உறுதிப்படுத்தவும்.',
+            'Challan generated successfully. You can now print or download your challan.': 'சலான் வெற்றிகரமாக உருவாக்கப்பட்டது. இப்போது சலானை அச்சிடலாம் அல்லது பதிவிறக்கலாம்.',
+            'Please say the amount clearly': 'தொகையைத் தெளிவாகக் கூறவும்.',
+            'Could not understand the amount. Please try again.': 'தொகையைப் புரிந்துகொள்ள முடியவில்லை. மீண்டும் முயற்சிக்கவும்.'
+        };
+        if (translations[text]) return translations[text];
+        if (text.startsWith('You selected ')) {
+            const transaction = text.includes('Withdrawal') ? 'பணம் எடுத்தல்' : 'பணம் செலுத்தல்';
+            return `${transaction} தேர்ந்தெடுக்கப்பட்டது. உங்கள் கணக்கு எண்ணை உள்ளிடவும்.`;
+        }
+        if (text.startsWith('Amount set to ')) {
+            return `தொகை ${text.replace(/[^0-9]/g, '')} ரூபாய் என அமைக்கப்பட்டது.`;
+        }
+        if (text.startsWith('Session expiring in ')) {
+            return `அமர்வு ${text.replace(/[^0-9]/g, '')} விநாடிகளில் முடிவடைகிறது.`;
+        }
+        return text;
     }
     
     speakNumber(number) {

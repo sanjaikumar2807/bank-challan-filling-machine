@@ -1,0 +1,369 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Bank Challan Filling Machine</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+</head>
+<body>
+    <!-- Main Application Container -->
+    <div id="app" class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="bank-logo">
+                    <img src="{% static 'assets/bank-logo.png' %}" alt="Bank Logo" onerror="this.style.display='none'">
+                    <h1>Bank Challan Machine</h1>
+                </div>
+                <div class="header-info">
+                    <div class="datetime" id="datetime"></div>
+                    <div class="help-button" onclick="showHelp()">
+                        <span class="help-icon">?</span>
+                        <span class="help-text">Help</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Welcome Screen -->
+            <div id="welcome-screen" class="screen active">
+                <div class="screen-content">
+                    <div class="welcome-section">
+                        <h2 class="screen-title">Welcome to Bank Challan Service</h2>
+                        <p class="screen-subtitle">Please select a transaction type to begin</p>
+                    </div>
+                    
+                    <div class="transaction-types">
+                        <button class="transaction-btn primary" onclick="selectTransactionType('deposit')">
+                            <div class="btn-icon">💰</div>
+                            <div class="btn-text">
+                                <h3>Deposit</h3>
+                                <p>Deposit money into account</p>
+                            </div>
+                        </button>
+                        
+                        <button class="transaction-btn secondary" onclick="selectTransactionType('withdrawal')">
+                            <div class="btn-icon">💸</div>
+                            <div class="btn-text">
+                                <h3>Withdrawal</h3>
+                                <p>Withdraw money from account</p>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <div class="quick-actions">
+                        <button class="quick-action-btn" onclick="showLanguageSelector()">
+                            <span class="icon">🌍</span>
+                            <span class="text">Language</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="showAccessibilityOptions()">
+                            <span class="icon">♿</span>
+                            <span class="text">Accessibility</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Input Screen -->
+            <div id="account-screen" class="screen">
+                <div class="screen-content">
+                    <div class="screen-header">
+                        <button class="back-btn" onclick="goBack()">← Back</button>
+                        <h2 class="screen-title">Enter Account Details</h2>
+                    </div>
+                    
+                    <div class="account-input-section">
+                        <div class="input-group">
+                            <label class="input-label">Account Number</label>
+                            <div class="input-with-scan">
+                                <input type="text" 
+                                       id="account-number" 
+                                       class="large-input" 
+                                       placeholder="Enter 12-digit account number"
+                                       maxlength="12"
+                                       pattern="[0-9]{12}">
+                                <button class="scan-btn" onclick="startBarcodeScanner()">
+                                    <span class="scan-icon">📷</span>
+                                    <span class="scan-text">Scan</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="input-label">Confirm Account Number</label>
+                            <input type="text" 
+                                   id="confirm-account-number" 
+                                   class="large-input" 
+                                   placeholder="Re-enter account number"
+                                   maxlength="12"
+                                   pattern="[0-9]{12}">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="input-label">Account Holder Name</label>
+                            <input type="text" 
+                                   id="account-holder-name" 
+                                   class="large-input" 
+                                   placeholder="Enter account holder name">
+                        </div>
+                        
+                        <div class="scanner-section" id="scanner-section" style="display: none;">
+                            <div class="scanner-container">
+                                <video id="scanner-video" autoplay playsinline></video>
+                                <div class="scanner-overlay">
+                                    <div class="scan-frame"></div>
+                                </div>
+                            </div>
+                            <div class="scanner-controls">
+                                <button class="control-btn" onclick="stopScanner()">Cancel</button>
+                                <button class="control-btn primary" onclick="captureScan()">Capture</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="action-btn primary large" onclick="proceedToAmount()">
+                            Continue to Amount
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Amount Input Screen -->
+            <div id="amount-screen" class="screen">
+                <div class="screen-content">
+                    <div class="screen-header">
+                        <button class="back-btn" onclick="goBack()">← Back</button>
+                        <h2 class="screen-title">Enter Amount</h2>
+                    </div>
+                    
+                    <div class="amount-input-section">
+                        <div class="amount-display">
+                            <span class="currency-symbol">₹</span>
+                            <span class="amount-value" id="amount-display">0</span>
+                        </div>
+                        
+                        <div class="input-methods">
+                            <button class="method-btn active" onclick="setInputMethod('keypad')">
+                                <span class="method-icon">🔢</span>
+                                <span class="method-text">Keypad</span>
+                            </button>
+                            <button class="method-btn" onclick="setInputMethod('voice')">
+                                <span class="method-icon">🎤</span>
+                                <span class="method-text">Voice</span>
+                            </button>
+                            <button class="method-btn" onclick="setInputMethod('text')">
+                                <span class="method-icon">⌨️</span>
+                                <span class="method-text">Text</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Numeric Keypad -->
+                        <div id="keypad-input" class="input-method active">
+                            <div class="numeric-keypad">
+                                <button class="key-btn" onclick="addDigit('1')">1</button>
+                                <button class="key-btn" onclick="addDigit('2')">2</button>
+                                <button class="key-btn" onclick="addDigit('3')">3</button>
+                                <button class="key-btn" onclick="addDigit('4')">4</button>
+                                <button class="key-btn" onclick="addDigit('5')">5</button>
+                                <button class="key-btn" onclick="addDigit('6')">6</button>
+                                <button class="key-btn" onclick="addDigit('7')">7</button>
+                                <button class="key-btn" onclick="addDigit('8')">8</button>
+                                <button class="key-btn" onclick="addDigit('9')">9</button>
+                                <button class="key-btn" onclick="addDigit('0')">0</button>
+                                <button class="key-btn" onclick="addDigit('00')">00</button>
+                                <button class="key-btn clear" onclick="clearAmount()">Clear</button>
+                            </div>
+                            
+                            <div class="quick-amounts">
+                                <button class="quick-amount-btn" onclick="setAmount(100)">₹100</button>
+                                <button class="quick-amount-btn" onclick="setAmount(500)">₹500</button>
+                                <button class="quick-amount-btn" onclick="setAmount(1000)">₹1,000</button>
+                                <button class="quick-amount-btn" onclick="setAmount(2000)">₹2,000</button>
+                                <button class="quick-amount-btn" onclick="setAmount(5000)">₹5,000</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Voice Input -->
+                        <div id="voice-input" class="input-method">
+                            <div class="voice-controls">
+                                <button class="voice-btn" id="voice-btn" onclick="toggleVoiceInput()">
+                                    <span class="voice-icon">🎤</span>
+                                    <span class="voice-text">Tap to Speak Amount</span>
+                                </button>
+                                <div class="voice-status" id="voice-status">
+                                    <div class="status-indicator"></div>
+                                    <span class="status-text">Ready to listen</span>
+                                </div>
+                            </div>
+                            <div class="voice-instructions">
+                                <h4>Say the amount clearly:</h4>
+                                <ul>
+                                    <li>"One thousand rupees"</li>
+                                    <li>"Five hundred"</li>
+                                    <li>"Two thousand five hundred"</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Text Input -->
+                        <div id="text-input" class="input-method">
+                            <div class="text-input-container">
+                                <input type="text" 
+                                       id="amount-text-input" 
+                                       class="large-input text-input" 
+                                       placeholder="Enter amount in rupees"
+                                       pattern="[0-9]+">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="action-btn primary large" onclick="proceedToConfirmation()">
+                            Continue to Confirmation
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confirmation Screen -->
+            <div id="confirmation-screen" class="screen">
+                <div class="screen-content">
+                    <div class="screen-header">
+                        <button class="back-btn" onclick="goBack()">← Back</button>
+                        <h2 class="screen-title">Confirm Transaction Details</h2>
+                    </div>
+                    
+                    <div class="confirmation-section">
+                        <div class="transaction-summary">
+                            <h3>Transaction Summary</h3>
+                            <div class="summary-details">
+                                <div class="detail-row">
+                                    <span class="detail-label">Transaction Type:</span>
+                                    <span class="detail-value" id="confirm-type">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Account Number:</span>
+                                    <span class="detail-value" id="confirm-account">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Account Holder:</span>
+                                    <span class="detail-value" id="confirm-name">-</span>
+                                </div>
+                                <div class="detail-row amount-row">
+                                    <span class="detail-label">Amount:</span>
+                                    <span class="detail-value amount" id="confirm-amount">₹0</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Date & Time:</span>
+                                    <span class="detail-value" id="confirm-datetime">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="confirmation-actions">
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="confirm-checkbox">
+                                    <span class="checkmark"></span>
+                                    I confirm that all details are correct
+                                </label>
+                            </div>
+                            
+                            <div class="action-buttons">
+                                <button class="action-btn secondary large" onclick="goBack()">
+                                    Edit Details
+                                </button>
+                                <button class="action-btn primary large" onclick="generateChallan()">
+                                    Generate Challan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Challan Preview Screen -->
+            <div id="challan-screen" class="screen">
+                <div class="screen-content">
+                    <div class="screen-header">
+                        <h2 class="screen-title">Challan Preview</h2>
+                    </div>
+                    
+                    <div class="challan-preview">
+                        <div class="challan-document" id="challan-document">
+                            <!-- Challan content will be generated here -->
+                        </div>
+                        
+                        <div class="print-actions">
+                            <button class="print-btn primary large" onclick="printChallan()">
+                                <span class="print-icon">🖨️</span>
+                                <span class="print-text">Print Challan</span>
+                            </button>
+                            <button class="action-btn secondary large" onclick="downloadChallan()">
+                                <span class="download-icon">📥</span>
+                                <span class="download-text">Download PDF</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="contact-info">
+                    <span>Need Help? Call: 1800-123-4567</span>
+                </div>
+                <div class="session-info">
+                    <span id="session-timer">Session: 05:00</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Help & Support</h3>
+                <button class="close-btn" onclick="closeHelp()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="help-sections">
+                    <div class="help-section">
+                        <h4>How to Use</h4>
+                        <ol>
+                            <li>Select transaction type (Deposit/Withdrawal/Transfer)</li>
+                            <li>Enter your account number or scan barcode</li>
+                            <li>Enter the amount using keypad or voice</li>
+                            <li>Confirm details and generate challan</li>
+                            <li>Print the challan for your records</li>
+                        </ol>
+                    </div>
+                    <div class="help-section">
+                        <h4>Contact Support</h4>
+                        <p>Phone: 1800-123-4567</p>
+                        <p>Email: support@bank.com</p>
+                        <p>Available 24/7 for assistance</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{% static 'js/app.js' %}"></script>
+    <script src="{% static 'js/scanner.js' %}"></script>
+    <script src="{% static 'js/voice.js' %}"></script>
+    <script src="{% static 'js/printer.js' %}"></script>
+    <script src="{% static 'js/utils.js' %}"></script>
+</body>
+</html>
